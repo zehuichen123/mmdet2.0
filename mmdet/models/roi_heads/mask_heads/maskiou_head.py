@@ -135,7 +135,8 @@ class MaskIoUHead(nn.Module):
         area_ratios = torch.cat(list(area_ratios))
         assert mask_targets.size(0) == area_ratios.size(0)
 
-        mask_pred = (mask_pred > rcnn_train_cfg.mask_thr_binary).float()
+        # mask_pred = (mask_pred > rcnn_train_cfg.mask_thr_binary).float()
+        mask_pred = (mask_pred > 0.5).float()           # NOTE for HTC conpatibility
         mask_pred_areas = mask_pred.sum((-1, -2))
 
         # mask_pred and mask_targets are binary maps
