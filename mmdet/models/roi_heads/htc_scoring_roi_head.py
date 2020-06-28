@@ -408,7 +408,8 @@ class HybridTaskScoringCascadeRoIHead(CascadeRoIHead):
 
         return results
 
-    def aug_test(self, img_feats, img_metas, proposals=None, rescale=False):
+    # def aug_test(self, img_feats, img_metas, proposals=None, rescale=False):
+    def aug_test(self, img_feats, proposal_list, img_metas, rescale=False):
         """Test with augmentations.
 
         If rescale is False, then returned bboxes and masks will fit the scale
@@ -422,8 +423,8 @@ class HybridTaskScoringCascadeRoIHead(CascadeRoIHead):
             semantic_feats = [None] * len(img_metas)
 
         # recompute feats to save memory
-        proposal_list = self.aug_test_rpn(img_feats, img_metas,
-                                          self.test_cfg.rpn)
+        # proposal_list = self.aug_test_rpn(img_feats, img_metas,
+        #                                   self.test_cfg.rpn)
 
         rcnn_test_cfg = self.test_cfg
         aug_bboxes = []
@@ -525,9 +526,11 @@ class HybridTaskScoringCascadeRoIHead(CascadeRoIHead):
                     ori_shape,
                     scale_factor=1.0,
                     rescale=False)
+
+                import numpy as np
+                merged_masks_torch = torch.from_numpy(merged_masks).to(torch.float16).cuda()
+                mask_results = dict(mask_pred=merged_masks_torch, mask_feats=mask_feats)      # NOTE not sure whether mask features is correct here
                 
-                # NOTE get mask scores with mask iou head
-                mask_results = dict(mask_pred=merged_masks, mask_feats=mask_feats)      # NOTE not sure whether mask features is correct here
                 mask_iou_pred = self.mask_iou_head(
                     mask_results['mask_feats'],
                     mask_results['mask_pred'][range(det_labels.size(0)), det_labels])
